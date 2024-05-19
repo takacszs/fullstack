@@ -52,8 +52,8 @@ const blogsInDb = async () => {
 
 beforeEach(async () => {
   await Blog.deleteMany({})
-  for (let blog of initialBlogs) {
-    let blogObject = new Blog(blog)
+  for (const blog of initialBlogs) {
+    const blogObject = new Blog(blog)
     await blogObject.save()
   }
 })

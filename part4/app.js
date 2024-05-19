@@ -14,10 +14,13 @@ const mongoUrl = conf.MONGO_URI
 mongoose.connect(mongoUrl).then(()=>logger.info(`mongo connection successful`)).catch(error=>logger.error("mongo conn failed: "+error))
 
 const blogsRouter = require("./controllers/blogs.js")
+const usersRouter = require('./controllers/users')
 
 app.use(middleware.requestLogger)
 
 app.use("/api/blogs", blogsRouter)
+app.use('/api/users', usersRouter)
+
 app.use(middleware.unknownEndpoint)
 app.use(middleware.errorHandler)
 
