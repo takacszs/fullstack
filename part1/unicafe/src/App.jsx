@@ -2,14 +2,16 @@ import { useState } from 'react'
 
 const Statistics = (props) => {
   return (
-    <div>
+    <table>
+      <tbody>
       <StatisticLine text="good" value={props.good}/>
       <StatisticLine text="neutral" value={props.neutral}/>
       <StatisticLine text="bad" value={props.bad}/>
       <StatisticLine text="all" value={props.all}/>
       <StatisticLine text="avg" value={props.avg}/>
       <StatisticLine text="pos" value={props.posPercent}/>
-    </div>
+      </tbody>
+    </table>
   )
 }
 
@@ -23,9 +25,10 @@ const Button = ({ handleClick, label }) => {
 
 const StatisticLine = ({text,value}) => {
   return (
-    <div>
-      {text}: {value}
-    </div>
+    <tr>
+      <td>{text}</td>
+      <td>{value}</td>
+    </tr>
   )
 }
 
