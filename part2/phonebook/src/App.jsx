@@ -4,6 +4,7 @@ import Form from "./components/Form";
 import Persons from "./components/Persons";
 import Notification from "./components/Notification";
 import Error from "./components/Error";
+import Filter from "./components/Filter";
 import "./index.css"
 
 const App = () => {
@@ -12,6 +13,7 @@ const App = () => {
   const [newNumber, setNewNumber] = useState("");
   const [NotiMsg, SetNotiMsg] = useState(null);
   const [ErrorMsg, SetErrorMsg] = useState(null);
+  const [filteredName, setFilteredName] = useState("");
 
   const handleNameChange = (event) => {
     setNewName(event.target.value);
@@ -53,15 +55,32 @@ const App = () => {
     }
   }
 
+  const handleFilteredNameChange = (event) => {
+    setFilteredName(event.target.value);
+  };
+
   useEffect(() => {
-    personsService.getAll().then((data) => {
-      setPersons(data);
+    personsService.getAll().then((personsBeforeFilter) => {
+      setPersons(personsBeforeFilter);
     });
   }, []);
 
+
+  // if there is a filter set persons to accordingly else leave it as is 
+  const personsToShow = filteredName !== "" ? persons.filter((person) => person.name.toLowerCase().includes(filteredName.toLowerCase())) : persons;
+
+    
   return (
     <div>
       <h2>Phonebook</h2>
+
+      <Filter
+        filteredName={filteredName}
+        handleFilteredNameChange={handleFilteredNameChange}
+      />
+
+      <h3> Add a new phone number: </h3>
+
       <Notification message={NotiMsg}/>
       <Error message={ErrorMsg}/>
       <Form
@@ -72,7 +91,7 @@ const App = () => {
         newNumber={newNumber}
       />
       <h2>Numbers</h2>
-      <Persons persons={persons} handleDeleteClick={handleDeleteClick} />
+      <Persons persons={personsToShow} handleDeleteClick={handleDeleteClick} />
     </div>
   );
 };
