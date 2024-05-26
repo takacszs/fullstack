@@ -1,6 +1,6 @@
 const Blog = require("../models/blog.js")
 const blogsRouter = require("express").Router()
-const User = require('../models/user')
+const middleware = require('../utils/middleware')
 
 // 4.17
 blogsRouter.get("/", async (_request, response) => {
@@ -8,29 +8,33 @@ blogsRouter.get("/", async (_request, response) => {
   response.json(blogs)
   })
 
-// 4.17
-blogsRouter.post("/", async (request, response) => {
-  if (request.body.title === undefined || request.body.url === undefined) {
-    response.status(400).json({
-      error: 'title or url is missing',
-    })
-  }
-  else {
-    // for now it will assign the first user it finds
-    const user = await User.findOne({});
-    console.log('user :>> ', user);
-      const blog = new Blog( {
-        title: request.body.title,
-        author: request.body.author === undefined ? '' : request.body.author,
-        url: request.body.url,
-        likes: request.body.likes === undefined ? 0 : request.body.likes,
-        user: user._id
+// 4.17 and 4.18-19
+blogsRouter.post("/", middleware.userExtractor, async (request, response, next) => {
+  try{
+    if (request.body.title === undefined || request.body.url === undefined) {
+      response.status(400).json({
+        error: 'title or url is missing',
       })
-    const savedBlog = await blog.save()
-    user.blogs = user.blogs.concat(savedBlog._id.toString())
-    // user object also changes!!
-    await user.save()
-    response.status(201).json(savedBlog)
+    }
+    else {
+      const user = request.user
+        const blog = new Blog( {
+          title: request.body.title,
+          author: request.body.author === undefined ? '' : request.body.author,
+          url: request.body.url,
+          likes: request.body.likes === undefined ? 0 : request.body.likes,
+          user: user._id
+        })
+      const savedBlog = await blog.save()
+      user.blogs = user.blogs.concat(savedBlog._id.toString())
+      // user object also changes!!
+      await user.save()
+      response.status(201).json(savedBlog)
+    }
+  }
+  catch(exception){
+    console.log("hffsfds")
+    next(exception)
   }
 
 })
@@ -61,8 +65,19 @@ blogsRouter.put('/:id', async (request, response, next) => {
   }
 })
 
-blogsRouter.delete("/:id", async (request, response, next) => {
+blogsRouter.delete("/:id", middleware.userExtractor, async (request, response, next) => {
+  console.log('haha :>>');
   try {
+    const user = request.user
+    const blog = await Blog.findById(request.params.id)
+    
+    if (!blog) {
+      response.status(404).end()
+    }
+    else if ( blog.user.toString() !== user._id.toString() )  {
+      return response.status(401).json({ error: "invalid user, can not remove blog" })
+    }
+
     const deletedBlog = await Blog.findByIdAndRemove(request.params.id)
 
     if (deletedBlog) {
@@ -74,6 +89,5 @@ blogsRouter.delete("/:id", async (request, response, next) => {
     next(exception)
   }
 })
-
 
 module.exports = blogsRouter

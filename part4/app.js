@@ -15,11 +15,18 @@ mongoose.connect(mongoUrl).then(()=>logger.info(`mongo connection successful`)).
 
 const blogsRouter = require("./controllers/blogs.js")
 const usersRouter = require('./controllers/users')
+const loginRouter = require("./controllers/login")
 
 app.use(middleware.requestLogger)
 
+/4.20
+app.use(middleware.tokenExtractor)
+
+/4.22
 app.use("/api/blogs", blogsRouter)
 app.use('/api/users', usersRouter)
+// 4.18
+app.use('/api/login', loginRouter)
 
 app.use(middleware.unknownEndpoint)
 app.use(middleware.errorHandler)
